@@ -53,42 +53,38 @@ Current price > (1.5 * DMA 200)
 ```mermaid
 flowchart LR
     %% Screener Data Inputs
-    S1[Screener URL 1 - Buy Query]
-    S2[Screener URL 2 - Sell/Exit Query]
-    S3[Screener URL 3 - Avoid Query]
+    Screener1[Screener URL 1 - Buy Query]
+    Screener2[Screener URL 2 - Sell/Exit Query]
+    Screener3[Screener URL 3 - Avoid/Warning Query]
 
     %% Agents
-    D[Data Agent - Scrape & Merge Data]
-    A[Analysis Agent - Evaluate Buy Signals]
-    R[Risk Agent - Detect Sell/Avoid Signals]
-    AD[Advisor Agent - Decide Final BUY/EXIT]
-    SP[Splitter Agent - Distribute 1000 INR]
-    N[Notifier Agent - Send Summary to Telegram]
-    AU[Audit Agent - Store Decisions in S3]
-    T[Tracker Agent - Monthly ROI Tracking]
+    D[Data Agent - Scrape and Merge Data]
+    A[Analysis Agent - Classify Stocks]
+    AD[Advisor Agent - Final Decision Buy,Exit,Hold]
+    SP[Splitter Agent - Distribute ₹1000]
+    N[Notifier Agent - Telegram Summary + Confirmation]
+    AU[Audit Agent - Store Logs to S3]
+    T[Tracker Agent - Track ROI]
 
     %% External Components
-    TG[Telegram Bot - Confirmation & Logs]
-    S3[AWS S3 - Audit Storage]
-    Z[Zerodha / Groww - Trader Agent]
+    TG[Telegram Bot - User Interaction]
+    AWS_S3[AWS S3 - Storage]
+    Z[Zerodha/Groww - Future Auto-Trading Integration]
 
     %% Flow
-    S1 --> D
-    S2 --> D
-    S3 --> D
+    Screener1 --> D
+    Screener2 --> D
+    Screener3 --> D
     D --> A
-    D --> R
     A --> AD
-    R --> AD
     AD --> SP
     SP --> N
     N --> TG
     N --> AU
-    AU --> S3
-    T --> S3
+    AU --> AWS_S3
+    T --> AWS_S3
     TG --> AU
     SP --> T
-    S3 --> T
     T --> AD
     Z --> SP
 ```
@@ -207,16 +203,16 @@ classDiagram
 ```mermaid
 stateDiagram-v2
     [*] --> Idle
-    Idle --> Running : Lambda Trigger 9 AM
+    Idle --> Running : Lambda Trigger - 9AM, Weekdays
     Running --> DataFetched : Screener Data Collected
-    DataFetched --> AnalysisDone : Buy or Sell Evaluation
-    AnalysisDone --> Advised : Advisor Decides Action
-    Advised --> Notified : Telegram Notification Sent
-    Notified --> AwaitingConfirmation : Waiting for User Input
-    AwaitingConfirmation --> Confirmed : User Approves
+    DataFetched --> AnalysisDone : Stocks Classified - Buy/Exit/Avoid
+    AnalysisDone --> Advised : Advisor Suggests Final Actions
+    Advised --> Notified : Telegram Summary Sent
+    Notified --> AwaitingConfirmation : Waiting for User Approval
+    AwaitingConfirmation --> Confirmed : User Approves Buy/Exit
     AwaitingConfirmation --> Idle : User Rejects
-    Confirmed --> Audited : Logs Saved to S3
-    Audited --> Tracked : Monthly ROI Updated
+    Confirmed --> Audited : Logs Stored in S3
+    Audited --> Tracked : ROI Updated for Month
     Tracked --> Idle : Cycle Complete
 ```
 ---
