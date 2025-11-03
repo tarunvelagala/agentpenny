@@ -4,6 +4,18 @@ An agentic AI system that identifies potential multi-bagger penny stocks, alloca
 
 The goal is to minimize risk, capture early growth, and automate data analysis and tracking, with optional integration to Zerodha or Groww APIs for automated low-latency trading at market open.
 
+## 🧭 Example Flow
+
+- Lambda triggers at 9:00 AM (weekdays).
+- Data Agent scrapes 3 Screener URLs.
+- Analysis Agent classifies results (Buy / Exit / Avoid).
+- Advisor Agent compiles actionable suggestions.
+- Splitter Agent allocates ₹1000 evenly.
+- Notifier Agent sends summary to Telegram.
+- You confirm or reject suggestions.
+- Audit Agent logs actions in S3.
+- Tracker Agent updates ROI for next cycle.
+
 ## 🧠 System Overview
 
 This system uses multiple collaborating agents, each focused on a specific function:
