@@ -1,60 +1,39 @@
 # N8N Workflow 
 
 ```sql
-+---------------------+
-| Schedule Trigger    |  <-- Runs monthly
-+---------------------+
-           |
-           v
-+---------------------+
-| Scraper Subworkflow |  <-- Run in parallel for 3 URLs
-+---------------------+
-           |
-           v
-+---------------------+
-| Merge Node          |  <-- Combine all subworkflow outputs
-+---------------------+
-           |
-           v
-+---------------------+
-| Advisor Agent       |  <-- Python
-| - Classify stocks   |
-| - Check audit table |
-| - Output BUY/HOLD/EXIT
-+---------------------+
-           |
-           v
-+---------------------+
-| Investment Splitter |  <-- Python
-| - Allocate ₹1000    |
-|   evenly across BUY |
-+---------------------+
-           |
-           v
-+---------------------+
-| IF Node             |  <-- Check if actionable stocks exist
-+---------------------+
-        /   \
-       /     \
- True /       \ False
-     /         \
-    v           v
-+-----------+  +----------------------+
-| Telegram  |  | Telegram             |
-| Node      |  | Node                 |
-| - Send    |  | - "No stocks this    |
-|   investment| |   month" message     |
-|   plan     |  +----------------------+
-+-----------+
-      |
-      v
-+---------------------+
-| Audit Node          |  <-- Store actions in n8n Table / Supabase
-+---------------------+
-      |
-      v
-+---------------------+
-| Portfolio Tracker / |
-| DB                  |  <-- Log stock, units, invested amount
-+---------------------+
+[Schedule Trigger (Monthly)]
+             │
+             ▼
+   [Scraper / Parser Subworkflows] ──┐
+             │                       │
+             ▼                       │
+         [Merge Node] ◀──────────────┘  (merges all subworkflow outputs)
+             │
+             ▼
+     [Advisor Agent (Python)]
+   - Classifies stocks as BUY/HOLD/EXIT
+   - Checks `_audit` table to skip previous buys
+             │
+             ▼
+[Investment Splitter Agent (Python)]
+   - Allocates ₹1000 across BUY stocks
+   - Computes units per stock
+             │
+             ▼
+          [IF Node]
+Condition: investment_plan exists & length > 0 & Telegram sent
+         /                    \
+      True:                     False:
+      │                           │
+      ▼                           ▼
+ [Telegram Node]           [Telegram Node]
+Send investment plan      Send "No stocks this month"
+      │
+      ▼
+  [Audit Node / DB]
+   - Update `_audit` with newly bought stocks
+   - Log portfolio: stock, units, invested amount
+      │
+      ▼
+[Portfolio Tracker / DB]
 ```
